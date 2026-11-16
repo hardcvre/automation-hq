@@ -54,6 +54,11 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:14p
 .card dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
 .card .note{margin:0;font-family:var(--display);font-weight:500;font-size:13px;color:var(--dept,var(--accent));border-top:1px solid var(--line);padding-top:8px}
 .card .note[hidden]{display:none}
+.work{display:flex;flex-direction:column;gap:4px;border-top:1px solid var(--line);padding-top:8px}
+.work[hidden]{display:none}
+.work strong{font-family:var(--display);font-weight:600;font-size:14px}
+.work ul{margin:0;padding-left:16px;font-size:12.5px;display:flex;flex-direction:column;gap:2px}
+.card{max-height:58vh;overflow-y:auto}
 .chip{font-family:var(--display);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--dept,var(--accent))}
 button{font:inherit;color:inherit}
 .x{background:transparent;border:1px solid var(--line);border-radius:4px;width:28px;height:28px;cursor:pointer;flex:none;line-height:1}
@@ -113,10 +118,16 @@ button{font:inherit;color:inherit}
         <dt>Last shift</dt><dd id="cLast"></dd>
       </dl>
       <p class="note" id="cNote" hidden></p>
+      <div class="work" id="cWork" hidden>
+        <span class="chip">On their screen</span>
+        <strong id="cWorkTitle"></strong>
+        <ul id="cWorkLines"></ul>
+        <span class="task" id="cWorkAt"></span>
+      </div>
     </section>
     <div class="bar staff" id="staffBar" hidden role="group" aria-label="Employees in this department"></div>
     <div class="bar" id="deptBar" role="group" aria-label="Departments"></div>
-    <p class="hint">Drag to look around, pinch or scroll to zoom, tap an employee to meet them.</p>
+    <p class="hint">Drag to look around, pinch or scroll to zoom, tap an employee to read their screen.</p>
   </div>
 </div>
 
@@ -150,7 +161,7 @@ var DEPTS = {
 };
 var DAY = 864e5;
 var byId = {};
-TASKS.forEach(function (t) { t.enabled = true; t.lastAt = null; t.failed = false; t.note = ''; byId[t.id] = t; });
+TASKS.forEach(function (t) { t.enabled = true; t.lastAt = null; t.failed = false; t.note = ''; t.screen = null; byId[t.id] = t; });
 var statusAt = null;
 
 /* ---------- Schedule maths ---------- */
@@ -284,6 +295,14 @@ function renderCard() {
   $('cSched').textContent = describe(t, nx || occurrences(t.cron, now, now + 40 * DAY)[0]); $('cNext').textContent = nx ? when(nx) : 'Not scheduled';
   $('cLast').textContent = lastText(t);
   $('cNote').textContent = t.note || ''; $('cNote').hidden = !t.note;
+  var w = t.screen && t.screen.lines.length ? t.screen : null;
+  $('cWork').hidden = !w;
+  if (w) {
+    $('cWorkTitle').textContent = w.title || 'Latest work';
+    var ul = $('cWorkLines'); ul.textContent = '';
+    w.lines.forEach(function (x) { var li = document.createElement('li'); li.textContent = x; ul.appendChild(li); });
+    $('cWorkAt').textContent = w.at ? 'Reported ' + lastText({enabled: true, lastAt: w.at, failed: false}).replace(' \u00b7 done', '') : '';
+  }
   $('cIn').textContent = isWorking(t, now) ? 'Working now' : nx ? countdown(nx - now) : '';
 }
 var nextIdx = -1;
@@ -305,6 +324,16 @@ function renderSub() {
   s += isNaN(at) ? 'Schedules as saved on 16 Nov 2026.' : 'Status updated ' + lastText({enabled: true, lastAt: at, failed: false}).replace(' \u00b7 done', '') + '.';
   $('sub').textContent = s;
 }
+function setScreen(t, d) {
+  if (!d || typeof d !== 'object' || !Array.isArray(d.lines)) return;
+  var at = Date.parse(d.at || '');
+  t.screen = {
+    title: typeof d.title === 'string' ? d.title.slice(0, 48) : '',
+    lines: d.lines.filter(function (x) { return typeof x === 'string' && x.trim(); }).slice(0, 5).map(function (x) { return x.slice(0, 80); }),
+    at: isNaN(at) ? null : at,
+    failed: d.status === 'failed'
+  };
+}
 function applyStatus(d) {
   if (!d || !Array.isArray(d.tasks)) return;
   statusAt = typeof d.refreshedAt === 'string' ? d.refreshedAt : null;
@@ -316,6 +345,7 @@ function applyStatus(d) {
     var la = Date.parse(s.lastAt || ''); t.lastAt = isNaN(la) ? null : la;
     t.failed = /FAIL|ERROR|TIMED|CANCEL/i.test(String(s.lastStatus || ''));
     t.note = typeof s.note === 'string' ? s.note.slice(0, 48) : '';
+    if (s.screen) setScreen(t, s.screen);
   });
   renderSub(); renderCard(); tick();
 }
@@ -340,14 +370,14 @@ function start3D() {
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.outputEncoding = THREE.sRGBEncoding;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.3;
+  renderer.toneMappingExposure = 1.12;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   stage.appendChild(renderer.domElement);
 
   var scene = new THREE.Scene();
   scene.background = new THREE.Color(0x070b12);
-  scene.fog = new THREE.FogExp2(0x070b12, 0.016);
+  scene.fog = new THREE.FogExp2(0x070b12, 0.011);
 
   var camera = new THREE.PerspectiveCamera(38, window.innerWidth / window.innerHeight, 0.1, 300);
   var controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -427,7 +457,7 @@ function start3D() {
     g.add(box(D.w, 0.03, e, edge, 0, 0.11, -D.d / 2 + e / 2, false));
     g.add(box(e, 0.03, D.d, edge, D.w / 2 - e / 2, 0.11, 0, false));
     g.add(box(e, 0.03, D.d, edge, -D.w / 2 + e / 2, 0.11, 0, false));
-    var glass = new THREE.MeshStandardMaterial({color: D.hex, transparent: true, opacity: 0.1, roughness: 0.1, metalness: 0.4, side: THREE.DoubleSide, depthWrite: false});
+    var glass = new THREE.MeshStandardMaterial({color: D.hex, transparent: true, opacity: 0.055, roughness: 0.1, metalness: 0.4, side: THREE.DoubleSide, depthWrite: false});
     var H = 1.9;
     g.add(box(D.w, H, 0.04, glass, 0, 0.1 + H / 2, -D.d / 2, false));
     g.add(box(0.04, H, D.d, glass, -D.w / 2, 0.1 + H / 2, 0, false));
@@ -437,7 +467,7 @@ function start3D() {
     g.add(box(0.06, 0.04, D.d, edge, D.w / 2, 0.1 + H, 0, false));
     var sign = label(name.toUpperCase(), {color: D.css, height: 0.7}); sign.position.set(0, 2.75, -D.d / 2); g.add(sign);
     var signHalo = halo(D.hex, D.w > 6 ? 5.4 : 4, 1.9, 0.3); signHalo.position.set(0, 2.75, -D.d / 2 - 0.02); g.add(signHalo);
-    var pool = new THREE.Mesh(new THREE.PlaneGeometry(D.w, D.d), new THREE.MeshBasicMaterial({map: glowTex, color: D.hex, transparent: true, opacity: 0.34, blending: THREE.AdditiveBlending, depthWrite: false}));
+    var pool = new THREE.Mesh(new THREE.PlaneGeometry(D.w, D.d), new THREE.MeshBasicMaterial({map: glowTex, color: D.hex, transparent: true, opacity: 0.16, blending: THREE.AdditiveBlending, depthWrite: false}));
     pool.rotation.x = -Math.PI / 2; pool.position.y = 0.112; g.add(pool);
     var pl = new THREE.PointLight(D.hex, 0.9, 10, 2); pl.position.set(0, 2.6, 0.5); g.add(pl); g.userData.light = pl;
     [[-1, -1], [1, -1]].forEach(function (c) {
@@ -502,9 +532,11 @@ function start3D() {
     g.add(box(0.7, 0.38, 0.01, screenMat, 0, 1.1, 0.795, false));
     g.add(box(0.2, 0.03, 0.01, glow(col, 2), 0, 1.1, 0.845, false));
     var sHalo = halo(col, 1.8, 1.25, 0.28); sHalo.position.set(0, 1.12, 0.72); g.add(sHalo);
-    var alertTag = label('ALERT', {color: '#ff6b78', bg: 'rgba(44,6,14,.92)', height: 0.3}); alertTag.position.set(0, 2.36, 0); alertTag.visible = false; g.add(alertTag);
-    /* name plate */
-    var tag = label(t.role, {color: '#eaf2ff', bg: 'rgba(10,15,26,.88)', height: 0.26}); tag.position.set(0, 2.0, 0); g.add(tag);
+    var alertTag = label('ALERT', {color: '#ff6b78', bg: 'rgba(44,6,14,.92)', height: 0.3}); alertTag.position.set(0, 3.05, -0.5); alertTag.visible = false; g.add(alertTag);
+    /* work screen: a display above the desk showing what this employee last produced */
+    var panel = new THREE.Mesh(new THREE.PlaneGeometry(1.7, 1.0625), new THREE.MeshBasicMaterial({transparent: true, depthWrite: false, toneMapped: false, fog: false}));
+    panel.position.set(0, 2.32, -0.5); panel.rotation.x = -0.2; panel.renderOrder = 2; g.add(panel);
+    g.add(box(0.04, 0.5, 0.04, M.dark, 0, 1.62, -0.52, false));
     /* next-up beacon */
     var ringMat = new THREE.MeshBasicMaterial({color: col, transparent: true, opacity: 0.9, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false});
     var ring = new THREE.Mesh(new THREE.RingGeometry(0.95, 1.05, 48), ringMat); ring.rotation.x = -Math.PI / 2; ring.position.set(0, 0.03, 0.25); g.add(ring);
@@ -515,8 +547,49 @@ function start3D() {
     hit.position.set(0, 1.05, 0.3); hit.userData.idx = i; g.add(hit); hits.push(hit);
 
     rooms[t.dept].add(g);
-    robots.push({g: g, head: head, armL: armL, armR: armR, visor: visorMat, screen: screenMat, ant: antMat, ring: ring, beam: beam, phase: i * 1.7, tag: tag, chest: chestMat, sHalo: sHalo, vHalo: vHalo, alert: alertTag, col: col, note: null, noteText: '', mode: 'ok'});
+    robots.push({g: g, head: head, armL: armL, armR: armR, visor: visorMat, screen: screenMat, ant: antMat, ring: ring, beam: beam, phase: i * 1.7, panel: panel, panelKey: '', chest: chestMat, sHalo: sHalo, vHalo: vHalo, alert: alertTag, col: col, mode: 'ok'});
   });
+
+  function fit(g, text, max) {
+    if (g.measureText(text).width <= max) return text;
+    while (text.length > 1 && g.measureText(text + '\u2026').width > max) text = text.slice(0, -1);
+    return text.replace(/\s+$/, '') + '\u2026';
+  }
+  function refreshPanel(r, task) {
+    var now = Date.now(), sc = task.screen, off = !task.enabled, bad = task.enabled && (task.failed || (sc && sc.failed));
+    var nx = nextOf(task, now);
+    var key = [task.enabled, bad, sc ? sc.at + sc.title + sc.lines.join('|') : '', task.note, sc ? '' : nx].join('~');
+    if (key === r.panelKey) return;
+    r.panelKey = key;
+    var css = bad ? '#ff6b78' : DEPTS[task.dept].css;
+    var c = document.createElement('canvas'); c.width = 512; c.height = 320;
+    var g = c.getContext('2d'), F = '"Chakra Petch", "Trebuchet MS", system-ui, sans-serif';
+    g.fillStyle = 'rgba(7,12,22,.9)'; rr(g, 3, 3, 506, 314, 14); g.fill();
+    g.strokeStyle = css; g.lineWidth = 3; rr(g, 3, 3, 506, 314, 14); g.stroke();
+    g.fillStyle = css; g.fillRect(3, 58, 506, 2);
+    g.textBaseline = 'alphabetic';
+    g.font = '600 17px ' + F; g.textAlign = 'right'; g.fillStyle = css;
+    var state = off ? 'OFF DUTY' : bad ? 'ALERT' : 'ON DUTY';
+    g.fillText(state, 490, 40);
+    var stateW = g.measureText(state).width;
+    g.textAlign = 'left'; g.font = '700 28px ' + F; g.fillStyle = '#eaf2ff';
+    g.fillText(fit(g, task.role, 450 - stateW), 22, 42);
+    g.font = '600 21px ' + F; g.fillStyle = css;
+    var title = sc && sc.lines.length ? (sc.title || 'Latest work') : off ? 'Switched off' : 'Waiting for first report';
+    g.fillText(fit(g, title, 468), 22, 92);
+    g.font = '500 20px ' + F; g.fillStyle = '#d5deee';
+    var lines = sc && sc.lines.length ? sc.lines : [describe(task, nx || occurrences(task.cron, now, now + 40 * DAY)[0])].concat(task.note ? [task.note] : []);
+    lines.slice(0, 5).forEach(function (ln, k) {
+      g.fillStyle = css; g.fillRect(22, 113 + k * 33, 5, 5);
+      g.fillStyle = '#d5deee'; g.fillText(fit(g, ln, 440), 38, 122 + k * 33);
+    });
+    g.font = '500 16px ' + F; g.fillStyle = '#93a4bd';
+    var foot = sc && sc.at ? 'Reported ' + lastText({enabled: true, lastAt: sc.at, failed: false}).replace(' \u00b7 done', '') : nx ? 'Next shift ' + when(nx) : '';
+    g.fillText(fit(g, foot, 468), 22, 298);
+    var tex = new THREE.CanvasTexture(c); tex.encoding = THREE.sRGBEncoding; tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    if (r.panel.material.map) r.panel.material.map.dispose();
+    r.panel.material.map = tex; r.panel.material.needsUpdate = true;
+  }
 
   /* courier drone carrying work between rooms */
   var drone = new THREE.Group();
@@ -584,7 +657,7 @@ function start3D() {
   function frame() {
     requestAnimationFrame(frame);
     var dt = Math.min(clock.getDelta(), 0.05), t = clock.elapsedTime;
-    if (t - lastCheck > 1 || !working.length) { lastCheck = t; var now = Date.now(); working = TASKS.map(function (task) { return isWorking(task, now); }); }
+    if (t - lastCheck > 1 || !working.length) { lastCheck = t; var now = Date.now(); working = TASKS.map(function (task) { return isWorking(task, now); }); robots.forEach(function (r, i) { refreshPanel(r, TASKS[i]); }); }
 
     var busyIdx = -1, deptBusy = {}, kk = Math.min(1, dt * 5);
     robots.forEach(function (r, i) {
@@ -596,14 +669,8 @@ function start3D() {
         [r.visor, r.screen, r.ant, r.chest].forEach(function (m) { m.color.setHex(hex); m.emissive.setHex(hex); });
         [r.ring.material, r.beam.material, r.sHalo.material, r.vHalo.material].forEach(function (m) { m.color.setHex(hex); });
       }
-      if (task.note !== r.noteText) {
-        r.noteText = task.note;
-        if (r.note) { r.g.remove(r.note); r.note.material.map.dispose(); r.note.material.dispose(); r.note = null; }
-        if (task.note) { r.note = label(task.note, {color: DEPTS[task.dept].css, height: 0.21}); r.note.position.set(0, 2.31, 0); r.g.add(r.note); }
-      }
       r.alert.visible = bad && Math.sin(t * 6) > -0.4;
-      if (r.note) r.note.visible = !bad && !off;
-      r.tag.material.opacity = off ? 0.4 : 1;
+      r.panel.material.opacity = off ? 0.4 : 1;
       if (off) {
         r.armL.rotation.x += (-0.15 - r.armL.rotation.x) * kk; r.armR.rotation.x += (-0.15 - r.armR.rotation.x) * kk; r.armR.rotation.z = 0;
         r.head.rotation.x += (0.6 - r.head.rotation.x) * kk; r.head.rotation.y += (0 - r.head.rotation.y) * kk;

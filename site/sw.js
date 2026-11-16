@@ -1,5 +1,5 @@
 /* Offline shell for Automation HQ. Bump VERSION when shell files change. */
-var VERSION = 'hq-v1';
+var VERSION = 'hq-v2';
 var SHELL = ['./', 'index.html', 'manifest.webmanifest', 'vendor/three.min.js', 'vendor/OrbitControls.js', 'icons/icon-192.png', 'icons/icon-180.png'];
 self.addEventListener('install', function (e) {
   e.waitUntil(caches.open(VERSION).then(function (c) { return c.addAll(SHELL); }).then(function () { return self.skipWaiting(); }));
