@@ -1,0 +1,104 @@
+{
+ "refreshedAt": "2026-11-16T06:10:00Z",
+ "tasks": [
+  {
+   "id": "trig_014xBeJRtCL2MZJzBMWqH3Yy",
+   "name": "Daily spending sync",
+   "cron": "CRON_TZ=Asia/Dubai 42 21 * * *",
+   "enabled": true,
+   "lastAt": "2026-11-15T17:42:17Z",
+   "lastStatus": "",
+   "note": ""
+  },
+  {
+   "id": "trig_01YEhD5JUqjLwHQuJ5eEyy1q",
+   "name": "Daily expense summary",
+   "cron": "CRON_TZ=Asia/Dubai 40 21 * * *",
+   "enabled": true,
+   "lastAt": "2026-11-15T17:40:27Z",
+   "lastStatus": "",
+   "note": ""
+  },
+  {
+   "id": "trig_019ZcCwZP16D7ErNzqgDPuUY",
+   "name": "Weekly spending analysis",
+   "cron": "CRON_TZ=Asia/Dubai 37 19 * * 0",
+   "enabled": true,
+   "lastAt": "2026-11-15T15:38:15Z",
+   "lastStatus": "",
+   "note": ""
+  },
+  {
+   "id": "trig_01DRZxvM4yPemzYz6yZxoweT",
+   "name": "Weekly money coach",
+   "cron": "CRON_TZ=Asia/Dubai 43 7 * * 1",
+   "enabled": true,
+   "lastAt": "2026-11-16T03:43:40Z",
+   "lastStatus": "",
+   "note": ""
+  },
+  {
+   "id": "trig_01Bi8Rhn5fLAcBHPNV9k4yuK",
+   "name": "Monthly debt-killer plan",
+   "cron": "CRON_TZ=Asia/Dubai 38 9 25 * *",
+   "enabled": true,
+   "lastAt": null,
+   "lastStatus": "",
+   "note": ""
+  },
+  {
+   "id": "trig_01PLpdgHhJDxVQU6iupAsxgW",
+   "name": "Daily halal day-trade shortlist",
+   "cron": "CRON_TZ=Asia/Dubai 45 16 * * 1-5",
+   "enabled": true,
+   "lastAt": "2026-11-13T12:47:09Z",
+   "lastStatus": "",
+   "note": ""
+  },
+  {
+   "id": "trig_01TVdVCTLDhvP33yCfRZH6BG",
+   "name": "ENEC Threat Wall feed refresh",
+   "cron": "11 */6 * * *",
+   "enabled": true,
+   "lastAt": "2026-11-16T00:12:53Z",
+   "lastStatus": "SUCCEEDED",
+   "note": ""
+  },
+  {
+   "id": "trig_011srKPkKqB8tGQ1PSj5qykL",
+   "name": "Ramlah weekly content plan",
+   "cron": "CRON_TZ=Asia/Dubai 47 18 * * 4",
+   "enabled": true,
+   "lastAt": "2026-11-12T14:50:03Z",
+   "lastStatus": "SUCCEEDED",
+   "note": ""
+  },
+  {
+   "id": "trig_01QVgzG4JZ3gWmAFAzFH478H",
+   "name": "Stock signal order check (week of 16 Nov)",
+   "cron": "CRON_TZ=America/New_York 45 9 * * 1-5",
+   "enabled": true,
+   "lastAt": null,
+   "lastStatus": "",
+   "note": ""
+  },
+  {
+   "id": "trig_01HkvRYdENNfwjAC9NRuSyQH",
+   "name": "Automation HQ status refresh",
+   "cron": "8 */4 * * *",
+   "enabled": true,
+   "lastAt": null,
+   "lastStatus": "",
+   "note": ""
+  },
+  {
+   "id": "trig_01SMpgJwTWaHPHeMgtouisve",
+   "name": "Project issue engineer",
+   "cron": "CRON_TZ=Asia/Dubai 17 2 * * *",
+   "enabled": true,
+   "lastAt": null,
+   "lastStatus": "",
+   "note": ""
+  }
+ ]
+}
