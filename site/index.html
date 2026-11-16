@@ -148,7 +148,7 @@ var TASKS = [
   {id:'trig_01TVdVCTLDhvP33yCfRZH6BG',  name:'ENEC Threat Wall feed refresh',  cron:'11 */6 * * *',                     role:'Threat Intel Analyst', dept:'Security',  job:'Refreshes the CSOC Threat Wall with ranked threats, newly exploited vulnerabilities and regional news.'},
   {id:'trig_011srKPkKqB8tGQ1PSj5qykL',name:'Ramlah weekly content plan',     cron:'CRON_TZ=Asia/Dubai 47 18 * * 4',   role:'Content Planner',      dept:'Marketing', job:'Plans next week’s Instagram stories, reels and carousels for Ramlah.'},
   {id:'trig_01QVgzG4JZ3gWmAFAzFH478H',name:'Stock signal order check',       cron:'CRON_TZ=America/New_York 45 9 * * 1-5', role:'Signal Checker',     dept:'Trading',   job:'Reads the stock signal you forward each trading day, checks it against your limits and prepares one order for you to approve. It never places a trade itself. Trial runs through 20 Nov.'},
-  {id:'trig_01HkvRYdENNfwjAC9NRuSyQH',name:'Automation HQ status refresh',   cron:'8 */4 * * *',                      role:'Office Manager',       dept:'Operations',job:'Checks every employee’s schedule and last shift every 4 hours and keeps this office up to date.'},
+  {id:'trig_01HkvRYdENNfwjAC9NRuSyQH',name:'Automation HQ status refresh',   cron:'CRON_TZ=Asia/Dubai 14 7,22 * * *',     role:'Office Manager',       dept:'Operations',job:'Checks every employee’s schedule and last shift every 4 hours and keeps this office up to date.'},
   {id:'trig_01SMpgJwTWaHPHeMgtouisve',name:'Project issue engineer',          cron:'CRON_TZ=Asia/Dubai 17 2 * * *',    role:'Issue Engineer',       dept:'Projects',  job:'Each night takes one GitHub issue from the list you approved, does the work and opens a pull request for you to review. It never merges.'}
 ];
 var DEPTS = {

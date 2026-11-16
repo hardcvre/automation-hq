@@ -1,5 +1,5 @@
 {
- "refreshedAt": "2026-11-16T06:10:00Z",
+ "refreshedAt": "2026-11-16T11:08:00Z",
  "tasks": [
   {
    "id": "trig_014xBeJRtCL2MZJzBMWqH3Yy",
@@ -60,8 +60,8 @@
    "name": "ENEC Threat Wall feed refresh",
    "cron": "11 */6 * * *",
    "enabled": true,
-   "lastAt": "2026-11-16T00:12:53Z",
-   "lastStatus": "SUCCEEDED",
+   "lastAt": "2026-11-16T06:12:58Z",
+   "lastStatus": "",
    "note": ""
   },
   {
@@ -85,10 +85,10 @@
   {
    "id": "trig_01HkvRYdENNfwjAC9NRuSyQH",
    "name": "Automation HQ status refresh",
-   "cron": "8 */4 * * *",
+   "cron": "CRON_TZ=Asia/Dubai 14 7,22 * * *",
    "enabled": true,
-   "lastAt": null,
-   "lastStatus": "",
+   "lastAt": "2026-11-16T08:14:25Z",
+   "lastStatus": "FAILED",
    "note": ""
   },
   {
